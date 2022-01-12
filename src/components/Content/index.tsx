@@ -5,8 +5,7 @@ import SearchBar from '../SearchBar';
 import './styles.scss';
 
 const Content = () => {
-  const response = false;
-  const error = false;
+  const response = true;
   const loading = false;
   const isInvalid = true;
   return (
