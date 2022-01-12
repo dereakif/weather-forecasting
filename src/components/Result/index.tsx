@@ -3,24 +3,37 @@ import { useEffect, useMemo, useState } from 'react';
 import Chart from 'react-apexcharts';
 import { Datum, WeatherForecastT } from '../../interfaces/forecast.interfaces';
 import './styles.scss';
+
 interface ResultProps {
   response: WeatherForecastT;
 }
+interface DailyDetailProps {
+  city: string;
+  selectedDay?: Datum;
+}
 
-const DailyDetail = () => {
-  return (
-    <div className='detail-container'>
-      <h1 className='detail-container__temp'>10&deg;C</h1>
-      <h1 className='detail-container__city-name'>cityName</h1>
-      <h3 className='detail-container__date'>date</h3>
-      <div className='detail-container__forecast'>
-        <img className='detail-container__forecast__img' alt='condition' />
-        <span className='detail-container__forecast__condition'>
-          description
-        </span>
+const DailyDetail = ({ city, selectedDay }: DailyDetailProps) => {
+  if (selectedDay) {
+    const date = new Date(selectedDay.valid_date);
+    const formattedDate =
+      date.toLocaleDateString('en', { day: 'numeric' }) +
+      ' ' +
+      date.toLocaleDateString('en', { month: 'short' });
+    return (
+      <div className='detail-container'>
+        <h1 className='detail-container__temp'>{selectedDay.temp}&deg;C</h1>
+        <h1 className='detail-container__city-name'>{city}</h1>
+        <h3 className='detail-container__date'>{formattedDate}</h3>
+        <div className='detail-container__forecast'>
+          <img className='detail-container__forecast__img' alt='condition' />
+          <span className='detail-container__forecast__condition'>
+            {selectedDay.weather.description}
+          </span>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+  return null;
 };
 
 const Result = ({ response }: ResultProps) => {
@@ -107,6 +120,9 @@ const Result = ({ response }: ResultProps) => {
         title: {
           text: 'Temperature',
         },
+        forceNiceScale: true,
+        min: (num) => num - 5,
+        max: (num) => num + 5,
       },
       legend: {
         position: 'top',
@@ -141,28 +157,28 @@ const Result = ({ response }: ResultProps) => {
           data: minTemps,
         },
       ]);
-      if (initialOptions.xaxis?.categories) {
-        initialOptions.xaxis.categories = validDates;
-        if (initialOptions.yaxis) {
-          initialOptions.yaxis = {
-            max: Math.round(Math.max(...maxTemps)) + 4,
-            min: Math.round(Math.min(...minTemps)) - 4,
-          };
-        }
-        if (initialOptions.title) {
-          initialOptions.title.text += ` for ${response.city_name}, ${response.country_code}`;
-        }
-        if (initialOptions.chart?.events) {
-          initialOptions.chart.events.click = (event, chartContext, config) => {
-            const dataPointIndex = config.dataPointIndex;
-            dataPointIndex !== -1 &&
-              setSelectedDay(response.data[dataPointIndex]);
-          };
-        }
 
-        setOptionsForChart(initialOptions);
-        setSelectedDay(response.data[0]);
+      initialOptions.xaxis = {
+        type: 'datetime',
+        labels: {
+          format: 'dd MMM',
+        },
+        categories: validDates,
+      };
+
+      if (initialOptions.title) {
+        initialOptions.title.text += ` for ${response.city_name}, ${response.country_code}`;
       }
+      if (initialOptions.chart?.events) {
+        initialOptions.chart.events.click = (event, chartContext, config) => {
+          const dataPointIndex = config.dataPointIndex;
+          dataPointIndex !== -1 &&
+            setSelectedDay(response.data[dataPointIndex]);
+        };
+      }
+
+      setOptionsForChart(initialOptions);
+      setSelectedDay(response.data[0]);
     }
   }, [response, initialOptions]);
 
@@ -172,7 +188,10 @@ const Result = ({ response }: ResultProps) => {
         <div className='result__weather-chart'>
           <Chart options={optionsForChart} series={seriesForChart} />
         </div>
-        <DailyDetail />
+        <DailyDetail
+          city={response?.city_name || ''}
+          {...(selectedDay && { selectedDay })}
+        />
       </div>
     );
   }
