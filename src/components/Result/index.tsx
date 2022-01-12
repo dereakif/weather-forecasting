@@ -74,6 +74,11 @@ const Result = ({ response }: ResultProps) => {
               width: '100%',
             },
           },
+          yaxis: {
+            title: {
+              style: { fontWeight: 500, fontSize: '20px' },
+            },
+          },
         },
         {
           breakpoint: 650,
@@ -86,7 +91,10 @@ const Result = ({ response }: ResultProps) => {
             },
             title: {
               align: 'center',
-              style: { fontWeight: 600, fontSize: '14px' },
+              style: {
+                fontWeight: 600,
+                fontSize: '14px',
+              },
             },
           },
         },
@@ -123,6 +131,7 @@ const Result = ({ response }: ResultProps) => {
       yaxis: {
         title: {
           text: 'Temperature',
+          style: { fontWeight: 500, fontSize: '16px' },
         },
         forceNiceScale: true,
         min: (num) => num - 5,

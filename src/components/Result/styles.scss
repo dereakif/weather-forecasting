@@ -36,7 +36,7 @@
       }
       &__condition {
         font-size: 14px;
-        line-height: 17px;
+        margin-left: 0.5rem;
       }
     }
   }
@@ -54,6 +54,26 @@
     margin: 0 1rem;
     &__weather-chart {
       width: 100%;
+    }
+    .detail-container {
+      width: 200px;
+      height: 250px;
+      border-radius: 30px;
+      &__temp {
+        font-size: 28px;
+      }
+      &__city-name {
+        font-size: 22px;
+      }
+      &__forecast {
+        margin-top: 1rem;
+        &__img {
+          height: 40px;
+        }
+        &__condition {
+          font-size: 14px;
+        }
+      }
     }
   }
 }
