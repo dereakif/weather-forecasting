@@ -3,12 +3,13 @@ import { useEffect, useState } from 'react';
 import { WeatherForecastT } from '../interfaces/forecast.interfaces';
 import { useFetchWeatherT } from '../interfaces/useFetch.interfaces';
 
-export const useFetchWeatherByCityV2 = (city: string) => {
+export const useFetchWeatherByCity = () => {
   const [state, setState] = useState<useFetchWeatherT>({
     response: null,
     loading: false,
     error: null,
   });
+  const [city, setCity] = useState('');
 
   const BASE_URL =
     city &&
@@ -16,35 +17,38 @@ export const useFetchWeatherByCityV2 = (city: string) => {
 
   useEffect(() => {
     if (!city) return;
-    setState((prev) => ({
-      ...prev,
-      loading: true,
-    }));
-    axios
-      .get<WeatherForecastT>(BASE_URL)
-      .then((res) => {
-        const { data } = res;
-        setState((prev) => ({
-          ...prev,
-          response: data || null,
-          error: null,
-        }));
-      })
-      .catch((error) => {
-        const err = error as AxiosError;
-        setState({
-          loading: false,
-          response: null,
-          error: err.response?.data?.error,
+    const timeoutId = setTimeout(() => {
+      setState((prev) => ({
+        ...prev,
+        loading: true,
+      }));
+      axios
+        .get<WeatherForecastT>(BASE_URL)
+        .then((res) => {
+          const { data } = res;
+          setState((prev) => ({
+            ...prev,
+            response: data || null,
+            error: null,
+          }));
+        })
+        .catch((error) => {
+          const err = error as AxiosError;
+          setState({
+            loading: false,
+            response: null,
+            error: err.response?.data?.error,
+          });
+        })
+        .finally(() => {
+          setState((prev) => ({
+            ...prev,
+            loading: false,
+          }));
         });
-      })
-      .finally(() => {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-        }));
-      });
-  }, [BASE_URL]);
+    }, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [BASE_URL, city]);
 
-  return state;
+  return { ...state, city, setCity };
 };
