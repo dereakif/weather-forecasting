@@ -1,9 +1,13 @@
 import axios, { AxiosError } from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { WeatherForecastT } from '../interfaces/forecast.interfaces';
 import { useFetchWeatherT } from '../interfaces/useFetch.interfaces';
 
+type useRefT<T> = { [key: string]: T };
+
 export const useFetchWeatherByCity = () => {
+  const cache = useRef<useRefT<WeatherForecastT>>({});
+
   const [state, setState] = useState<useFetchWeatherT>({
     response: null,
     loading: false,
@@ -17,6 +21,9 @@ export const useFetchWeatherByCity = () => {
 
   useEffect(() => {
     if (!city) return;
+    if (cache.current[city]) {
+      return setState((prev) => ({ ...prev, response: cache.current[city] }));
+    }
     const timeoutId = setTimeout(() => {
       setState((prev) => ({
         ...prev,
@@ -31,6 +38,7 @@ export const useFetchWeatherByCity = () => {
             response: data || null,
             error: null,
           }));
+          cache.current[city] = data;
         })
         .catch((error) => {
           const err = error as AxiosError;
