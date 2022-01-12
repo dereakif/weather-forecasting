@@ -1,12 +1,19 @@
+import { SetStateAction } from 'react';
 import './styles.scss';
+interface Props {
+  city: string;
+  setCity: React.Dispatch<SetStateAction<string>>;
+}
 
-const SearchBar = () => {
+const SearchBar = ({ city, setCity }: Props) => {
   return (
     <div className='search-bar'>
       <input
         placeholder='Search City'
         type='text'
         className='search-bar__input'
+        value={city}
+        onChange={(e) => setCity(e.target.value)}
       />
       <svg
         className='search-bar__svg'
