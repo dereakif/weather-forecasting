@@ -1,0 +1,13 @@
+.no-result__container {
+  margin-top: 9rem;
+  text-align: center;
+  h1 {
+    font-weight: 400;
+  }
+  p {
+    font-size: 24px;
+  }
+  &--invalid-red {
+    color: #cd7b7b;
+  }
+}
