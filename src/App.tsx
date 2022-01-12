@@ -1,7 +1,12 @@
+import Header from './components/Header';
 import './App.scss';
 
 function App() {
-  return <div className='App'>Weather Forecasting</div>;
+  return (
+    <div className='App'>
+      <Header />
+    </div>
+  );
 }
 
 export default App;

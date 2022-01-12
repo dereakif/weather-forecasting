@@ -1,0 +1,17 @@
+.header {
+  background: #545454;
+  height: 80px;
+  display: grid;
+  place-items: center;
+  h1 {
+    margin: auto 0;
+    color: white;
+    text-align: center;
+  }
+}
+
+@media (max-width: 572px) {
+  .header {
+    padding: 10px;
+  }
+}
