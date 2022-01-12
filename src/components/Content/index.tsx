@@ -1,4 +1,4 @@
-import { useFetchWeatherByCityV2 } from '../../hooks/useFetchForecastByCity';
+import { useFetchWeatherByCity } from '../../hooks/useFetchForecastByCity';
 import Loading from '../Loading';
 import NoResult from '../NoResult';
 import Result from '../Result';
@@ -6,18 +6,18 @@ import SearchBar from '../SearchBar';
 import './styles.scss';
 
 const Content = () => {
-  const { loading, response } = useFetchWeatherByCityV2('NY');
-  const isInvalid = true;
+  const { response, error, loading, city, setCity } = useFetchWeatherByCity();
+
   return (
     <div className='content'>
-      <SearchBar />
+      <SearchBar city={city} setCity={setCity} />
       <div className='content__body'>
         {loading ? (
           <Loading />
         ) : response ? (
-          <Result />
+          <Result response={response} />
         ) : (
-          <NoResult isInvalid={isInvalid} />
+          <NoResult error={error} />
         )}
       </div>
     </div>
