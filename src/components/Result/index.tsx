@@ -25,7 +25,11 @@ const DailyDetail = ({ city, selectedDay }: DailyDetailProps) => {
         <h1 className='detail-container__city-name'>{city}</h1>
         <h3 className='detail-container__date'>{formattedDate}</h3>
         <div className='detail-container__forecast'>
-          <img className='detail-container__forecast__img' alt='condition' />
+          <img
+            className='detail-container__forecast__img'
+            alt='condition'
+            src={require(`../../assets/images/${selectedDay.weather.icon}.png`)}
+          />
           <span className='detail-container__forecast__condition'>
             {selectedDay.weather.description}
           </span>
