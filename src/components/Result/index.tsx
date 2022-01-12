@@ -1,6 +1,11 @@
 import { ApexOptions } from 'apexcharts';
+import { useEffect, useMemo, useState } from 'react';
 import Chart from 'react-apexcharts';
+import { Datum, WeatherForecastT } from '../../interfaces/forecast.interfaces';
 import './styles.scss';
+interface ResultProps {
+  response: WeatherForecastT;
+}
 
 const DailyDetail = () => {
   return (
@@ -17,92 +22,161 @@ const DailyDetail = () => {
     </div>
   );
 };
-const Result = () => {
-  const series: ApexAxisChartSeries = [
-    { name: 'series-1', data: [30, 40, 45, 50, 49, 60, 70, 91] },
-    { name: 'series-2', data: [20, 30, 25, 30, 19, 30, 20, 51] },
-  ];
-  const options: ApexOptions = {
-    chart: {
-      width: '100%',
-      type: 'line',
-      dropShadow: {
-        enabled: true,
-        color: '#000',
-        top: 18,
-        left: 7,
-        blur: 10,
-        opacity: 0.2,
-      },
-      toolbar: {
-        show: false,
-      },
-      events: {},
-    },
-    responsive: [
-      {
-        breakpoint: 1100,
-        options: {
-          chart: {
-            width: '100%',
-          },
-        },
-      },
-      {
-        breakpoint: 800,
-        options: {
-          legend: {
-            show: false,
-          },
-        },
-      },
-    ],
-    colors: ['#77B6EA', '#545454'],
-    dataLabels: {
-      enabled: true,
-    },
-    stroke: {
-      curve: 'smooth',
-    },
-    title: {
-      text: 'Average High & Low Temperatures',
-      align: 'center',
-      style: { fontWeight: 500, fontSize: '20px' },
-    },
-    grid: {
-      borderColor: '#e7e7e7',
-      row: {
-        colors: ['#f3f3f3', 'transparent'],
-        opacity: 0.5,
-      },
-    },
-    markers: {
-      size: 1,
-    },
-    xaxis: {
-      categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998],
-    },
-    yaxis: {
-      title: {
-        text: 'Temperature',
-      },
-    },
-    legend: {
-      position: 'top',
-      horizontalAlign: 'right',
-      floating: true,
-      offsetY: -25,
-      offsetX: -5,
-    },
+
+const Result = ({ response }: ResultProps) => {
+  const filterData = <T extends Datum, U extends keyof T>(
+    forecast: T[],
+    field: U
+  ) => {
+    return forecast?.map((fc) => fc[field]);
   };
-  return (
-    <div className='result'>
-      <div className='result__weather-chart'>
-        <Chart options={options} series={series} />
-      </div>
-      <DailyDetail />
-    </div>
+
+  const initialOptions: ApexOptions = useMemo(() => {
+    return {
+      chart: {
+        width: '100%',
+        type: 'line',
+        dropShadow: {
+          enabled: true,
+          color: '#000',
+          top: 18,
+          left: 7,
+          blur: 10,
+          opacity: 0.2,
+        },
+        toolbar: {
+          show: false,
+        },
+        events: {},
+      },
+      responsive: [
+        {
+          breakpoint: 1100,
+          options: {
+            chart: {
+              width: '100%',
+            },
+          },
+        },
+        {
+          breakpoint: 650,
+          options: {
+            legend: {
+              show: false,
+            },
+            dataLabels: {
+              enabled: false,
+            },
+            title: {
+              align: 'center',
+              style: { fontWeight: 600, fontSize: '14px' },
+            },
+          },
+        },
+      ],
+      colors: ['#77B6EA', '#545454'],
+      dataLabels: {
+        enabled: true,
+      },
+      stroke: {
+        curve: 'smooth',
+      },
+      title: {
+        text: 'Average High & Low Temperatures',
+        align: 'center',
+        style: { fontWeight: 500, fontSize: '20px' },
+      },
+      grid: {
+        borderColor: '#e7e7e7',
+        row: {
+          colors: ['#f3f3f3', 'transparent'],
+          opacity: 0.5,
+        },
+      },
+      markers: {
+        size: 1,
+      },
+      xaxis: {
+        categories: [],
+        type: 'datetime',
+        labels: {
+          format: 'dd MMM',
+        },
+      },
+      yaxis: {
+        title: {
+          text: 'Temperature',
+        },
+      },
+      legend: {
+        position: 'top',
+        horizontalAlign: 'right',
+        floating: true,
+        offsetY: -25,
+        offsetX: -5,
+      },
+    };
+  }, []);
+
+  const [seriesForChart, setSeriesForChart] =
+    useState<ApexAxisChartSeries | null>(null);
+  const [optionsForChart, setOptionsForChart] = useState<ApexOptions | null>(
+    null
   );
+  const [selectedDay, setSelectedDay] = useState<Datum | null>(null);
+
+  useEffect(() => {
+    if (response) {
+      const maxTemps = filterData(response.data, 'max_temp');
+      const minTemps = filterData(response.data, 'min_temp');
+      const validDates = filterData(response.data, 'valid_date');
+
+      setSeriesForChart([
+        {
+          name: 'High',
+          data: maxTemps,
+        },
+        {
+          name: 'Low',
+          data: minTemps,
+        },
+      ]);
+      if (initialOptions.xaxis?.categories) {
+        initialOptions.xaxis.categories = validDates;
+        if (initialOptions.yaxis) {
+          initialOptions.yaxis = {
+            max: Math.round(Math.max(...maxTemps)) + 4,
+            min: Math.round(Math.min(...minTemps)) - 4,
+          };
+        }
+        if (initialOptions.title) {
+          initialOptions.title.text += ` for ${response.city_name}, ${response.country_code}`;
+        }
+        if (initialOptions.chart?.events) {
+          initialOptions.chart.events.click = (event, chartContext, config) => {
+            const dataPointIndex = config.dataPointIndex;
+            dataPointIndex !== -1 &&
+              setSelectedDay(response.data[dataPointIndex]);
+          };
+        }
+
+        setOptionsForChart(initialOptions);
+        setSelectedDay(response.data[0]);
+      }
+    }
+  }, [response, initialOptions]);
+
+  if (seriesForChart && optionsForChart) {
+    return (
+      <div className='result'>
+        <div className='result__weather-chart'>
+          <Chart options={optionsForChart} series={seriesForChart} />
+        </div>
+        <DailyDetail />
+      </div>
+    );
+  }
+  return null;
 };
 
 export default Result;
