@@ -180,7 +180,7 @@ const Result = ({ response }: ResultProps) => {
       };
 
       if (initialOptions.title) {
-        initialOptions.title.text += ` for ${response.city_name}, ${response.country_code}`;
+        initialOptions.title.text = `Average High & Low Temperatures for ${response.city_name}, ${response.country_code}`;
       }
       if (initialOptions.chart?.events) {
         initialOptions.chart.events.click = (event, chartContext, config) => {
@@ -199,7 +199,11 @@ const Result = ({ response }: ResultProps) => {
     return (
       <div className='result'>
         <div className='result__weather-chart'>
-          <Chart options={optionsForChart} series={seriesForChart} />
+          <Chart
+            key={optionsForChart.title?.text}
+            options={optionsForChart}
+            series={seriesForChart}
+          />
         </div>
         <DailyDetail
           city={response?.city_name || ''}
