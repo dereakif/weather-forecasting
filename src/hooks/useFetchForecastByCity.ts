@@ -36,7 +36,7 @@ export const useFetchWeatherByCity = () => {
           setState((prev) => ({
             ...prev,
             response: data || null,
-            error: null,
+            error: data ? null : 'noContent',
           }));
           cache.current[city] = data;
         })
